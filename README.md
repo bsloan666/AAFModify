@@ -1,13 +1,13 @@
 AAFModify
 =========
-An executable based on AAFlib to modify Avid a plug-in's parameters based on characteristics of its associated media
---------------------------------------------------------------------------------------------------------------------
+An executable based on AAFlib to modify a plug-in's parameters based on characteristics of its associated media
+---------------------------------------------------------------------------------------------------------------
 
 This code borrows from a utility, aafembed, that ships with the Advanced Authoring Format SDK (AAF-src-1.2.0-DR1).
 
 The hope is that by sharing this repo with experts in the AAF format, a solution to a very specific problem will be 
-answered, namely: _what steps are required to locate and change the scale and offset parameters of Resize and 3DWarp
-plug-ins according to their associated media_
+answered, namely: _What steps are required to locate and change the scale and offset parameters of Resize and 3DWarp
+plug-ins according to their associated media?_
 
 The behavior of this program might simply be:
 
