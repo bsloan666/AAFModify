@@ -26,7 +26,11 @@ aafmodify /path/to/input_avid_aaf_file.aaf /path/to/output_avid_aaf_file.aaf
 Makefile
 --------
 The Makefile provided is extremely biased toward the author's dev environment. Developers on MacOS should have little 
-difficulty tailoring it to build on their systems. As an alternative to the Makefile build method, anyone with a working build of 
+difficulty tailoring it to build on their systems. When thusly customized, running:
+```
+make
+```
+...in the terminal should build AAFModify. As an alternative to the Makefile build method, anyone with a working build of 
 AAF-src-1.2.0-DR1 can simply rename aafmodify.cpp to aafembed.cpp, temporarily replace the source in the SDK's
 Utilities/aafembed directory and run:
 ```
