@@ -18,6 +18,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
+// 2021-02-17 lightly modified by Blake Sloan to only print out the filenames of picture media
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
