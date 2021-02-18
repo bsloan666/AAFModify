@@ -434,28 +434,39 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 
     // Attempting to get PluginDefs. Do I know what they are? No.
     // This appears never to be true
+	unsigned tlen = 0; 
+	unsigned n_paramdefs  = 0;
+	unsigned n_opdefs  = 0;
+	unsigned n_plugindefs  = 0;
+
     while (AAFRESULT_SUCCESS == pPluginDefIter->NextOne(&pPluginDef)){
-        ((IAAFDefObject*)pPluginDef)->GetName(pName,256);
-        convert(buf,128,pName);
-        printf("Plugin def: %s\n",buf); 
+        //((IAAFDefObject*)pPluginDef)->GetName(pName,256);
+	    //tlen = (unsigned) wcslen(pName);
+        //convert(buf,tlen,pName);
+        //printf("Plugin def: %s\n",buf); 
+        n_plugindefs++;
     }
 
-    /*
+    
     // Attempting to get OperationDefs. That sounds useful. It isn't.
     while (AAFRESULT_SUCCESS == pOpDefIter->NextOne(&pOpDef)){
-        ((IAAFDefObject*)pOpDef)->GetName(pName,256);
-        convert(buf,128,pName);
-        printf("Op def: %s\n",buf); 
+        //((IAAFDefObject*)pOpDef)->GetName(pName,256);
+	    //tlen = (unsigned) wcslen(pName);
+        //convert(buf, tlen, pName);
+        //printf("Op def: %s\n",buf); 
+        n_opdefs++;
     }
 
+    
     // Attempting to get ParameterDefs. 
     while (AAFRESULT_SUCCESS == pParamDefIter->NextOne(&pParamDef)){
-        ((IAAFDefObject*)pParamDef)->GetName(pName,256);
-        convert(buf,128,pName);
-        printf("Param def: %s\n",buf); 
+        //((IAAFDefObject*)pParamDef)->GetName(pName,256);
+	    //tlen = (unsigned) wcslen(pName);
+        //convert(buf, tlen, pName);
+        //printf("Param def: %s\n",buf); 
+        n_paramdefs++;
     }
-    */
-    printf("Enum defs: %x, %x, %x\n", pPluginDefIter, pOpDefIter, pParamDefIter);
+    printf("%d plugindefs, %d opdefs, %d paramdefs\n", n_plugindefs, n_opdefs, n_paramdefs );
 
 	while (AAFRESULT_SUCCESS == pFileMobIter->NextOne(&pFileMob))
 	{
