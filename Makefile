@@ -21,26 +21,30 @@ all:
 	-I$(AAFLIB_ROOT)/out/target/clang7-x86_64/Debug/Utilities/aafembed/include \
 	-I$(AAFLIB_ROOT)/Utilities/aafembed -I$(AAFLIB_ROOT)/ref-impl/include \
 	-I$(AAFLIB_ROOT)/ref-impl/include/ref-api \
-	-I$(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/DerivedSources/x86_64 \
-	-I$(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/DerivedSources \
-	-F$(AAFLIB_ROOT)/out/target/clang7-x86_64/Debug/Utilities/aafembed -D_DEBUG -MMD -MT dependencies \
-	-MF $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.d \
-	--serialize-diagnostics $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.dia \
 	-c aafmodify.cpp \
 	-o aafmodify.o
 	$(LD) -arch x86_64 \
 	-isysroot $(MACOSX_SDK) \
 	-L./ \
 	-F./ \
-	-filelist $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.LinkFileList \
-	-mmacosx-version-min=10.13 -Xlinker -object_path_lto \
-	-Xlinker $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed_lto.o \
 	-Xlinker -no_deduplicate -framework CoreFoundation -framework CoreServices -Wl,-search_paths_first -Wl,-headerpad_max_install_names \
 	$(AAFLIB_ROOT)/out/target/clang7-x86_64/Debug/RefImpl/libaafiid.a \
 	$(AAFLIB_ROOT)/out/target/clang7-x86_64/Debug/RefImpl/libaaflib.a \
-	-Xlinker -dependency_info \
-	-Xlinker $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed_dependency_info.dat \
+	aafmodify.o \
 	-o aafmodify
 
 clean:
 	rm -fv aafmodify.o aafmodify
+
+
+#-Xlinker $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed_lto.o \
+#-filelist $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.LinkFileList \
+#-MF $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.d \
+#--serialize-diagnostics $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.dia \
+#	-I$(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/DerivedSources/x86_64 \
+#	-I$(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/DerivedSources \
+#	-F$(AAFLIB_ROOT)/out/target/clang7-x86_64/Debug/Utilities/aafembed -D_DEBUG -MMD -MT dependencies \
+#	-mmacosx-version-min=10.13 -Xlinker -object_path_lto \
+#	-Xlinker aafmodify.o
+#	-Xlinker -dependency_info \
+#	-Xlinker $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed_dependency_info.dat \

@@ -389,7 +389,7 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 {
 	IAAFFile					*pFile = NULL;
 	IAAFHeader					*pHeader = NULL;
-	IAAFDictionary				*pDictionary = NULL;
+	IAAFDictionary              *pDictionary = NULL;
 
 	aafProductVersion_t productVersion;
 	productVersion.major = 0;
@@ -415,36 +415,47 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 
 	IAAFMob			*pFileMob = NULL;
 	IAAFOperationDef			*pOpDef = NULL;
+    IAAFPluginDef		*pPluginDef = NULL;
+    IAAFParameterDef		*pParamDef = NULL;
 	IEnumAAFMobs	*pFileMobIter = NULL;
 	IEnumAAFOperationDefs	*pOpDefIter = NULL;
+    IEnumAAFPluginDefs		*pPluginDefIter = NULL;
+    IEnumAAFParameterDefs		*pParamDefIter = NULL;
 	aafSearchCrit_t				criteria;
-	aafSearchCrit_t				criteria2;
+    char buf[256];
+    aafCharacter pName[256];
 	criteria.searchTag = kAAFByMobKind;
 	criteria.tags.mobKind = kAAFFileMob;		// Search by File Mob
 
 	check(pHeader->GetMobs(&criteria, &pFileMobIter));
-    
-    IEnumAAFPluginDefs		*pPluginDefIter = NULL;
-    IAAFPluginDef		*pPluginDef = NULL;
-    pDictionary->GetPluginDefs(&pPluginDefIter);
-    char buf[256];
-    aafCharacter pName[256];
+    check(pDictionary->GetPluginDefs(&pPluginDefIter));
+    check(pDictionary->GetParameterDefs(&pParamDefIter));
+    check(pDictionary->GetOperationDefs(&pOpDefIter));
 
     // Attempting to get PluginDefs. Do I know what they are? No.
     // This appears never to be true
+    /*
     while (AAFRESULT_SUCCESS == pPluginDefIter->NextOne(&pPluginDef)){
         ((IAAFDefObject*)pPluginDef)->GetName(pName,256);
         convert(buf,128,pName);
-        printf("Plugin def: %s",buf); 
+        printf("Plugin def: %s\n",buf); 
     }
 
     // Attempting to get OperationDefs. That sounds useful. It isn't.
-    pDictionary->GetOperationDefs(&pOpDefIter);
     while (AAFRESULT_SUCCESS == pOpDefIter->NextOne(&pOpDef)){
         ((IAAFDefObject*)pOpDef)->GetName(pName,256);
         convert(buf,128,pName);
-        printf("Op def: %s",buf); 
+        printf("Op def: %s\n",buf); 
     }
+
+    // Attempting to get ParameterDefs. 
+    while (AAFRESULT_SUCCESS == pParamDefIter->NextOne(&pParamDef)){
+        ((IAAFDefObject*)pParamDef)->GetName(pName,256);
+        convert(buf,128,pName);
+        printf("Param def: %s\n",buf); 
+    }
+    */
+    printf("Enum defs: %x, %x, %x\n", pPluginDefIter, pOpDefIter, pParamDefIter);
 
 	while (AAFRESULT_SUCCESS == pFileMobIter->NextOne(&pFileMob))
 	{
