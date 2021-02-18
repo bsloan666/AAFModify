@@ -414,9 +414,9 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	check(pHeader->GetDictionary(&pDictionary));
 
 	IAAFMob			*pFileMob = NULL;
-	IAAFOperationDef			*pCompMob = NULL;
+	IAAFOperationDef			*pOpDef = NULL;
 	IEnumAAFMobs	*pFileMobIter = NULL;
-	IEnumAAFOperationDefs	*pCompMobIter = NULL;
+	IEnumAAFOperationDefs	*pOpDefIter = NULL;
 	aafSearchCrit_t				criteria;
 	aafSearchCrit_t				criteria2;
 	criteria.searchTag = kAAFByMobKind;
@@ -424,6 +424,28 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 
 	check(pHeader->GetMobs(&criteria, &pFileMobIter));
     
+    IEnumAAFPluginDefs		*pPluginDefIter = NULL;
+    IAAFPluginDef		*pPluginDef = NULL;
+    pDictionary->GetPluginDefs(&pPluginDefIter);
+    char buf[256];
+    aafCharacter pName[256];
+
+    // Attempting to get PluginDefs. Do I know what they are? No.
+    // This appears never to be true
+    while (AAFRESULT_SUCCESS == pPluginDefIter->NextOne(&pPluginDef)){
+        ((IAAFDefObject*)pPluginDef)->GetName(pName,256);
+        convert(buf,128,pName);
+        printf("Plugin def: %s",buf); 
+    }
+
+    // Attempting to get OperationDefs. That sounds useful. It isn't.
+    pDictionary->GetOperationDefs(&pOpDefIter);
+    while (AAFRESULT_SUCCESS == pOpDefIter->NextOne(&pOpDef)){
+        ((IAAFDefObject*)pOpDef)->GetName(pName,256);
+        convert(buf,128,pName);
+        printf("Op def: %s",buf); 
+    }
+
 	while (AAFRESULT_SUCCESS == pFileMobIter->NextOne(&pFileMob))
 	{
 		IAAFSourceMob			*pSourceMob = NULL;
@@ -552,16 +574,6 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 		}
 		printf("  Using path=%s\n", avifile);
 
-        IEnumAAFPluginDefs		*pPluginDefIter = NULL;
-        IAAFPluginDef		*pluginDef = NULL;
-        pDictionary->GetPluginDefs(&pPluginDefIter);
-        char buf[256];
-        aafCharacter pName[256];
-        while (AAFRESULT_SUCCESS == pPluginDefIter->NextOne(&pluginDef)){
-            ((IAAFDefObject*)pluginDef)->GetName(pName,256);
-            convert(buf,128,pName);
-            printf("Plugin def: %s",buf); 
-        }
         /*
 		check(addEssenceDataForAVI(
 				pEssenceData,	// to call Write()
