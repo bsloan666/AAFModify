@@ -434,13 +434,13 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 
     // Attempting to get PluginDefs. Do I know what they are? No.
     // This appears never to be true
-    /*
     while (AAFRESULT_SUCCESS == pPluginDefIter->NextOne(&pPluginDef)){
         ((IAAFDefObject*)pPluginDef)->GetName(pName,256);
         convert(buf,128,pName);
         printf("Plugin def: %s\n",buf); 
     }
 
+    /*
     // Attempting to get OperationDefs. That sounds useful. It isn't.
     while (AAFRESULT_SUCCESS == pOpDefIter->NextOne(&pOpDef)){
         ((IAAFDefObject*)pOpDef)->GetName(pName,256);
