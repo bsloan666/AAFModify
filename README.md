@@ -46,7 +46,21 @@ In its current state, when invoked on the command line with:
 aafmodify -d "" /path/to/AAF_file.aaf
 ```
 
-The program will print out the filename associated with each source clip:
+The program will print the tokens "OpDef" as it iterates over each opdef and "ParamDef" as it iterates over each paramdef within that opdef:
+```
+OpDef
+  Param def
+  Param def
+  (2 paramdefs)
+OpDef
+  Param def
+  (1 paramdefs)
+OpDef
+  Param def
+  Param def
+  (2 paramdefs)
+```
+...then print out the filename associated with each source clip:
 
 ```
   Using path=/C015_C005_1122AG.mxf
