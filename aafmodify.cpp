@@ -429,7 +429,6 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 
 	check(pHeader->GetMobs(&criteria, &pFileMobIter));
     check(pDictionary->GetPluginDefs(&pPluginDefIter));
-    check(pDictionary->GetParameterDefs(&pParamDefIter));
     check(pDictionary->GetOperationDefs(&pOpDefIter));
 
     // Attempting to get PluginDefs. Do I know what they are? No.
@@ -439,34 +438,19 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	unsigned n_opdefs  = 0;
 	unsigned n_plugindefs  = 0;
 
-    while (AAFRESULT_SUCCESS == pPluginDefIter->NextOne(&pPluginDef)){
-        //((IAAFDefObject*)pPluginDef)->GetName(pName,256);
-	    //tlen = (unsigned) wcslen(pName);
-        //convert(buf,tlen,pName);
-        //printf("Plugin def: %s\n",buf); 
-        n_plugindefs++;
-    }
-
     
-    // Attempting to get OperationDefs. That sounds useful. It isn't.
     while (AAFRESULT_SUCCESS == pOpDefIter->NextOne(&pOpDef)){
-        //((IAAFDefObject*)pOpDef)->GetName(pName,256);
-	    //tlen = (unsigned) wcslen(pName);
-        //convert(buf, tlen, pName);
-        //printf("Op def: %s\n",buf); 
+        printf("OpDef\n"); 
         n_opdefs++;
+	    n_paramdefs  = 0;
+        check(pOpDef->GetParameterDefs(&pParamDefIter));
+        while (AAFRESULT_SUCCESS == pParamDefIter->NextOne(&pParamDef)){
+            printf("  Param def\n"); 
+            n_paramdefs++;
+        }
+        printf("  (%d paramdefs)\n", n_paramdefs );
     }
-
     
-    // Attempting to get ParameterDefs. 
-    while (AAFRESULT_SUCCESS == pParamDefIter->NextOne(&pParamDef)){
-        //((IAAFDefObject*)pParamDef)->GetName(pName,256);
-	    //tlen = (unsigned) wcslen(pName);
-        //convert(buf, tlen, pName);
-        //printf("Param def: %s\n",buf); 
-        n_paramdefs++;
-    }
-    printf("%d plugindefs, %d opdefs, %d paramdefs\n", n_plugindefs, n_opdefs, n_paramdefs );
 
 	while (AAFRESULT_SUCCESS == pFileMobIter->NextOne(&pFileMob))
 	{
