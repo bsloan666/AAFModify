@@ -428,7 +428,6 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	criteria.tags.mobKind = kAAFFileMob;		// Search by File Mob
 
 	check(pHeader->GetMobs(&criteria, &pFileMobIter));
-    check(pDictionary->GetPluginDefs(&pPluginDefIter));
     check(pDictionary->GetOperationDefs(&pOpDefIter));
 
     // Attempting to get PluginDefs. Do I know what they are? No.
@@ -437,8 +436,8 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	unsigned n_paramdefs  = 0;
 	unsigned n_opdefs  = 0;
 	unsigned n_plugindefs  = 0;
-
     
+    // This is some new code for identifying opdefs and param defs:
     while (AAFRESULT_SUCCESS == pOpDefIter->NextOne(&pOpDef)){
         printf("OpDef\n"); 
         n_opdefs++;
@@ -579,7 +578,6 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 			avifile[sizeof(avifile)-1] = '\0';
 		}
 		printf("  Using path=%s\n", avifile);
-
         /*
 		check(addEssenceDataForAVI(
 				pEssenceData,	// to call Write()

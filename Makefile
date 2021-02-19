@@ -1,11 +1,14 @@
 
+PACKAGE_NAME=AAF-src-1.2.0-DR1
+AAFLIB_ROOT=./$(PACKAGE_NAME)
+
+# These may require some customization...
 CXX=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 LD=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
-AAFLIB_ROOT=$(HOME)/swdevl/AAF-src-1.2.0-DR1
 MACOSX_SDK=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk
 
 
-all:
+all: aafmodify.cpp
 	$(CXX) -x c++ -arch x86_64 -fmessage-length=259 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 \
 	-fcolor-diagnostics -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes \
 	-Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces \
@@ -35,16 +38,15 @@ all:
 
 clean:
 	rm -fv aafmodify.o aafmodify
+	rm -fv AAF-src-1.2.0-DR1.zip
+	rm -rfv AAF-src-1.2.0-DR1
 
+deps:
+	wget https://sourceforge.net/projects/aaf/files/AAF-src/1.2.0-DR1/$(PACKAGE_NAME).zip -O $(PACKAGE_NAME).zip
+	unzip $(PACKAGE_NAME).zip
+	cd $(PACKAGE_NAME)/ && \
+	mkdir -p out/build && \
+	cd out/build && \
+    cmake -G "Xcode" -DPLATFORM=clang7 -DARCH=x86_64 ../.. && \
+    cmake --build .
 
-#-Xlinker $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed_lto.o \
-#-filelist $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.LinkFileList \
-#-MF $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.d \
-#--serialize-diagnostics $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed.dia \
-#	-I$(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/DerivedSources/x86_64 \
-#	-I$(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/DerivedSources \
-#	-F$(AAFLIB_ROOT)/out/target/clang7-x86_64/Debug/Utilities/aafembed -D_DEBUG -MMD -MT dependencies \
-#	-mmacosx-version-min=10.13 -Xlinker -object_path_lto \
-#	-Xlinker aafmodify.o
-#	-Xlinker -dependency_info \
-#	-Xlinker $(AAFLIB_ROOT)/out/build/Utilities/aafembed/AAF-SDK.build/Debug/aafembed.build/Objects-normal/x86_64/aafembed_dependency_info.dat \
