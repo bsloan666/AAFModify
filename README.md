@@ -41,7 +41,7 @@ What Does it Do?
 In its current state, when invoked on the command line with:
 
 ```
-aafmodify -d "" /path/to/AAF_file.aaf
+aafmodify /path/to/AAF_file.aaf
 ```
 
 The program will print the tokens "OpDef" as it iterates over each opdef and "ParamDef" as it iterates over each paramdef within that opdef:
@@ -58,19 +58,26 @@ OpDef
   Param def
   (2 paramdefs)
 ```
+...then print "CompositionMob" for each composition mob that it finds. 
+
+```
+CompMobs
+  CompositionMob
+  CompositionMob
+  CompositionMob
+  CompositionMob
+
+```
+
 ...then print out the filename associated with each source clip:
 
 ```
-  Using path=/C015_C005_1122AG.mxf
-
-  Using path=/D638_C006_0930GX.mxf
-
-  Using path=/D638_C004_09303J.mxf
-
-  Using path=/MUS0040_101_comp_v4E04AE67V.mxf
-
-  Using path=/GMA0196_102_comp_v220320F2V.mxf
-
+FileMobs
+  /C015_C005_1122AG.mxf
+  /D638_C006_0930GX.mxf
+  /D638_C004_09303J.mxf
+  /MUS0040_101_comp_v4E04AE67V.mxf
+  /GMA0196_102_comp_v220320F2V.mxf
 ```
 
 What Should it Do?

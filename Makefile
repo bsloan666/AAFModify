@@ -38,6 +38,8 @@ all: aafmodify.cpp
 
 clean:
 	rm -fv aafmodify.o aafmodify
+
+clean_deps: clean
 	rm -fv AAF-src-1.2.0-DR1.zip
 	rm -rfv AAF-src-1.2.0-DR1
 

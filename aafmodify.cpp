@@ -414,9 +414,11 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	check(pHeader->GetDictionary(&pDictionary));
 
 	IAAFMob			*pFileMob = NULL;
+	IAAFMob			*pCompMob = NULL;
 	IAAFOperationDef			*pOpDef = NULL;
     IAAFPluginDef		*pPluginDef = NULL;
     IAAFParameterDef		*pParamDef = NULL;
+	IEnumAAFMobs	*pCompMobIter = NULL;
 	IEnumAAFMobs	*pFileMobIter = NULL;
 	IEnumAAFOperationDefs	*pOpDefIter = NULL;
     IEnumAAFPluginDefs		*pPluginDefIter = NULL;
@@ -424,10 +426,14 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	aafSearchCrit_t				criteria;
     char buf[256];
     aafCharacter pName[256];
+
 	criteria.searchTag = kAAFByMobKind;
 	criteria.tags.mobKind = kAAFFileMob;		// Search by File Mob
-
 	check(pHeader->GetMobs(&criteria, &pFileMobIter));
+
+	criteria.tags.mobKind = kAAFCompMob;		// Search by Compisition Mob
+	check(pHeader->GetMobs(&criteria, &pCompMobIter));
+
     check(pDictionary->GetOperationDefs(&pOpDefIter));
 
     // Attempting to get PluginDefs. Do I know what they are? No.
@@ -437,6 +443,7 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	unsigned n_opdefs  = 0;
 	unsigned n_plugindefs  = 0;
     
+    printf("\n");
     // This is some new code for identifying opdefs and param defs:
     while (AAFRESULT_SUCCESS == pOpDefIter->NextOne(&pOpDef)){
         printf("OpDef\n"); 
@@ -450,7 +457,15 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
         printf("  (%d paramdefs)\n", n_paramdefs );
     }
     
+    printf("\n");
+    printf("CompMobs\n"); 
+	while (AAFRESULT_SUCCESS == pCompMobIter->NextOne(&pCompMob))
+	{
+        printf("  CompositionMob\n");
+    }
 
+    printf("\n");
+    printf("FileMobs\n"); 
 	while (AAFRESULT_SUCCESS == pFileMobIter->NextOne(&pFileMob))
 	{
 		IAAFSourceMob			*pSourceMob = NULL;
@@ -577,7 +592,7 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 			strncat(avifile, pb, sizeof(avifile)-strlen(avifile)-1);
 			avifile[sizeof(avifile)-1] = '\0';
 		}
-		printf("  Using path=%s\n", avifile);
+		printf("  %s", avifile);
         /*
 		check(addEssenceDataForAVI(
 				pEssenceData,	// to call Write()
