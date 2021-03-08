@@ -385,6 +385,38 @@ static aafBoolean_t hasEssenceForFileMob(IAAFHeader *pHeader, IAAFMob *pFileMob)
 	return present;
 }
 
+static string NameFromDefObject(IAAFDefObject	*pDefObject)
+{
+	aafWChar*	   pwName = NULL;
+	char*		   pszName = NULL;
+	aafUInt32	   textSize;
+    pDefObject->GetNameBufLen(&textSize);
+    pwName = new wchar_t[textSize/sizeof(wchar_t)];
+    pDefObject->GetName(pwName, textSize);
+    pszName = new char[textSize/sizeof(wchar_t)];
+    wcstombs(pszName, pwName, textSize/sizeof(wchar_t));
+    string result(pszName);
+    delete [] pwName;
+    delete [] pszName;
+    return result;
+    
+}
+static string NameFromMetaDefinition(IAAFMetaDefinition	*pMetaDefinition)
+{
+	aafWChar*	   pwName = NULL;
+	char*		   pszName = NULL;
+	aafUInt32	   textSize;
+    pMetaDefinition->GetNameBufLen(&textSize);
+    pwName = new wchar_t[textSize/sizeof(wchar_t)];
+    pMetaDefinition->GetName(pwName, textSize);
+    pszName = new char[textSize/sizeof(wchar_t)];
+    wcstombs(pszName, pwName, textSize/sizeof(wchar_t));
+    string result(pszName); 
+    delete [] pwName;
+    delete [] pszName;
+    return result;
+}
+
 static HRESULT RelinkAAFFile(aafWChar * pFileName)
 {
 	IAAFFile					*pFile = NULL;
@@ -405,7 +437,6 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	productInfo.productVersionString = (aafCharacter*)L"0.1.0.0";
 	productInfo.platform = (aafCharacter*)L"GNU/Hurd";
 
-
 	aafUInt32 modeFlags = 0;
 	check(AAFFileOpenExistingRead(pFileName, modeFlags,  &pFile));
 	// check(AAFFileOpenExistingModify(pFileName, modeFlags, &productInfo,  &pFile));
@@ -416,16 +447,56 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 	IAAFMob			*pFileMob = NULL;
 	IAAFMob			*pCompMob = NULL;
 	IAAFOperationDef			*pOpDef = NULL;
+	IAAFOperationGroup			*pOpGroup = NULL;
+    IAAFDataDef		*pDataDef = NULL;
     IAAFPluginDef		*pPluginDef = NULL;
     IAAFParameterDef		*pParamDef = NULL;
+    IAAFObject      		*pObject = NULL;
+    IEnumAAFProperties      		*pPropertyIter = NULL;
+    IAAFProperty      		*pProperty = NULL;
+    IAAFPropertyDef      		*pPropDef = NULL;
+    IAAFPropertyValue      		*pPropVal = NULL;
 	IEnumAAFMobs	*pCompMobIter = NULL;
 	IEnumAAFMobs	*pFileMobIter = NULL;
 	IEnumAAFOperationDefs	*pOpDefIter = NULL;
     IEnumAAFPluginDefs		*pPluginDefIter = NULL;
     IEnumAAFParameterDefs		*pParamDefIter = NULL;
+    IEnumAAFParameters          *pOpParameters = NULL;
+    IAAFParameter               *pParameter = NULL;
 	aafSearchCrit_t				criteria;
     char buf[256];
     aafCharacter pName[256];
+    aafBool           tester;
+    IAAFMetaDefinition *pMetaDefinition = NULL;
+	IAAFTypeDef*		pTypeDef = NULL;
+	HRESULT				hr = S_OK;
+
+	IAAFSegment*				pSegment = NULL;
+	IAAFSourceClip*				pSourceClip = NULL;
+	IAAFSequence*				pSequence = NULL;
+	IAAFComponent*				pComponent = NULL;
+	IEnumAAFComponents*			pCompIter = NULL;
+	IEnumAAFLocators*			pLocEnum = NULL;
+	IAAFLocator*				pLocator = NULL;
+	IAAFFiller*					pFiller = NULL;
+	IAAFEssenceDescriptor*		pEdesc = NULL;
+	IAAFSourceMob*				pSourceMob = NULL;
+	IAAFParameterDef*		    pParameterDef = NULL;
+	IAAFFindSourceInfo*			info = NULL;
+	IEnumAAFMobs*				pMobIter = NULL;
+	IAAFMob*					pMob = NULL;
+	IAAFMob*					pReferencedMob = NULL;
+	IEnumAAFMobSlots*			pSlotIter = NULL;
+	IAAFMasterMob*				pMasterMob = NULL;
+	IAAFMobSlot*				pSlot = NULL;
+	aafNumSlots_t				numMobs, numSlots;
+	aafNumSlots_t				numCompMobs;
+	aafNumSlots_t				numTapeMobs, numFileMobs, numMasterMobs;
+	aafMobID_t					mobID;
+	char						bufA[FILENAME_MAX];
+	aafWChar					bufW[1204];
+	aafLength_t					length;
+
 
 	criteria.searchTag = kAAFByMobKind;
 	criteria.tags.mobKind = kAAFFileMob;		// Search by File Mob
@@ -438,32 +509,243 @@ static HRESULT RelinkAAFFile(aafWChar * pFileName)
 
     // Attempting to get PluginDefs. Do I know what they are? No.
     // This appears never to be true
-	unsigned tlen = 0; 
+	unsigned tlen = 0;
 	unsigned n_paramdefs  = 0;
 	unsigned n_opdefs  = 0;
 	unsigned n_plugindefs  = 0;
-    
+
     printf("\n");
     // This is some new code for identifying opdefs and param defs:
     while (AAFRESULT_SUCCESS == pOpDefIter->NextOne(&pOpDef)){
-        printf("OpDef\n"); 
-        n_opdefs++;
+        pOpDef->GetDataDef(&pDataDef);
+        pDataDef->IsPictureKind(&tester);
+        if(tester){
+            IAAFDefObject		*pDefObject = NULL;
+            aafUID_t			effectDefAUID;
+            pOpDef->QueryInterface(IID_IAAFDefObject, (void **) &pDefObject);
+
+            string operation = NameFromDefObject(pDefObject);
+            cout << "Image Operation:" << operation.c_str() << endl;
+
+        } else  {
+            pDataDef->IsSoundKind(&tester);
+            if(tester){
+                cout << "Sound Operation" << endl;
+            }
+        }
 	    n_paramdefs  = 0;
         check(pOpDef->GetParameterDefs(&pParamDefIter));
         while (AAFRESULT_SUCCESS == pParamDefIter->NextOne(&pParamDef)){
-            printf("  Param def\n"); 
             n_paramdefs++;
+            pParamDef->GetTypeDefinition(&pTypeDef);
+            pTypeDef->QueryInterface(IID_IAAFMetaDefinition, (void **) &pMetaDefinition);
+            string param_name = NameFromMetaDefinition(pMetaDefinition);
+            printf("  Param Name: %s\n", param_name.c_str());
+            pMetaDefinition->Release();
+            pMetaDefinition = NULL;
+            pTypeDef->Release();
+            pTypeDef = NULL;
+
         }
         printf("  (%d paramdefs)\n", n_paramdefs );
     }
     
     printf("\n");
     printf("CompMobs\n"); 
-	while (AAFRESULT_SUCCESS == pCompMobIter->NextOne(&pCompMob))
+	while (pCompMobIter && AAFRESULT_SUCCESS == pCompMobIter->NextOne(&pMob))
 	{
         printf("  CompositionMob\n");
+        check(pMob->GetMobID (&mobID));
+//        MobIDtoString(mobID, bufA);
+//        printf("    (mobID %s)\n", bufA);
+        pMob->CountSlots(&numSlots);
+        cout << "Found " << numSlots << " slots" << endl;
+        check(pMob->GetSlots(&pSlotIter));
+        while (pSlotIter && AAFRESULT_SUCCESS == pSlotIter->NextOne(&pSlot))
+        {
+            check(pSlot->GetSegment(&pSegment));
+
+            // Get the length of the segment: access through the component interface.
+            check(pSegment->QueryInterface(IID_IAAFComponent, (void **) &pComponent));
+            pComponent->GetLength (&length);
+//            check(pComponent->GetLength (&length));
+            pComponent->Release();
+            pComponent = NULL;
+
+            hr = pSegment->QueryInterface(IID_IAAFSourceClip, (void **) &pSourceClip);
+            if(AAFRESULT_SUCCESS == hr)
+            {
+                printf("    Found source clip on slot\n");
+                printf("        It has length %" AAFFMT64 "d\n", length);
+
+                hr = pSourceClip->ResolveRef(&pReferencedMob);
+                if(hr == AAFRESULT_SUCCESS)
+                {
+                    check(pReferencedMob->GetMobID(&mobID));
+                    check(pReferencedMob->GetName (bufW, sizeof(bufW)));
+                    convert(bufA, sizeof(bufA), bufW);
+                    printf("    References mob = '%s'\n", bufA);
+//                    MobIDtoString(mobID, bufA);
+//                    printf("            (mobID %s)\n", bufA);
+
+                    pReferencedMob->Release();
+                    pReferencedMob = NULL;
+                }
+
+                pSourceClip->Release();
+                pSourceClip = NULL;
+            }
+            else
+            {
+                hr = pSegment->QueryInterface(IID_IAAFSequence, (void **) &pSequence);
+                if(AAFRESULT_SUCCESS == hr)
+                {
+                    aafUInt32	numComponents, item = 0;
+
+                    check(pSequence->CountComponents (&numComponents));
+                    printf("    Found Sequence on slot with %d components\n",
+                        numComponents);
+                    printf("        It has length %" AAFFMT64 "d\n", length);
+                    check(pSequence->GetComponents (&pCompIter));
+                    while (pCompIter && AAFRESULT_SUCCESS == pCompIter->NextOne(&pComponent))
+                    {
+
+                        item++;
+//                        check(pComponent->GetLength (&length));
+                        pComponent->GetLength (&length);
+                        hr = pComponent->QueryInterface(IID_IAAFOperationGroup, (void **)&pOpGroup);
+                        if(AAFRESULT_SUCCESS == hr)
+                        {
+                            IAAFOperationDef	*pEffectDef = NULL;
+                            IAAFDefObject		*pDefObject = NULL;
+                            aafUID_t			effectDefAUID;
+
+                            printf("        EFFECT:\n");
+                            pOpGroup->GetOperationDefinition(&pEffectDef);
+                            pEffectDef->QueryInterface(IID_IAAFDefObject, (void **) &pDefObject);
+                            string seq_name = NameFromDefObject(pDefObject);
+                            printf("          Name: %s\n", seq_name.c_str());
+
+                            pEffectDef->Release();
+                            pDefObject->Release();
+
+                            pOpGroup->GetParameters(&pOpParameters);
+                            while (pOpParameters && AAFRESULT_SUCCESS == pOpParameters->NextOne(&pParameter))
+                            {
+                                pParameter->GetParameterDefinition(&pParamDef);
+                                pParamDef->QueryInterface(IID_IAAFDefObject, (void **) &pDefObject);
+                                string param_name = NameFromDefObject(pDefObject);
+                                pParamDef->GetTypeDefinition(&pTypeDef);
+                                pTypeDef->QueryInterface(IID_IAAFMetaDefinition, (void **) &pMetaDefinition);
+                                string param_type = NameFromMetaDefinition(pMetaDefinition);
+
+                                if(( param_name.find("SCALE") != string::npos || param_name.find("POS") != string::npos) &&
+                                     param_type == "Rational")
+                                {    
+                                    printf("              Parameter Name: %s (%s)\n", param_name.c_str(), param_type.c_str());
+                                    pParameter->QueryInterface(IID_IAAFObject,(void **) &pObject);
+                                    pObject->GetProperties(&pPropertyIter); 
+                                    while (pPropertyIter && AAFRESULT_SUCCESS == pPropertyIter->NextOne(&pProperty))
+                                    {
+                                        pProperty->GetDefinition(&pPropDef);
+                                        pPropDef->QueryInterface(IID_IAAFMetaDefinition, (void **) &pMetaDefinition);
+                                        string prop_name = NameFromMetaDefinition(pMetaDefinition);
+                                        printf("                  Property Name: %s\n", prop_name.c_str());
+                                        pProperty->GetValue(&pPropVal);
+                                        pPropVal->GetType(&pTypeDef);
+                                        pTypeDef->QueryInterface(IID_IAAFMetaDefinition, (void **) &pMetaDefinition);
+                                        string prop_val = NameFromMetaDefinition(pMetaDefinition);
+                                        printf("                      Property Value: %s\n", prop_val.c_str());
+
+
+                                    }
+                                }
+                                pTypeDef->Release();
+                                pParamDef->Release();
+                                pDefObject->Release();
+                            }
+                        }
+
+                        hr = pComponent->QueryInterface(IID_IAAFSourceClip, (void **) &pSourceClip);
+                        if(AAFRESULT_SUCCESS == hr)
+                        {
+                            aafSourceRef_t		ref;
+
+                            check(pSourceClip->GetSourceReference (&ref));
+                            printf("        %d) A length %" AAFFMT64 "d source clip\n", item, length);
+                            check(pSourceClip->ResolveRef(&pReferencedMob));
+                            check(pReferencedMob->GetMobID(&mobID));
+                            check(pReferencedMob->GetName (bufW, sizeof(bufW)));
+//                            check(convert(bufA, sizeof(bufA), bufW));
+                            convert(bufA, sizeof(bufA), bufW);
+                            printf("            References mob = '%s'\n", bufA);
+//                            MobIDtoString(mobID, bufA);
+//                            printf("                (mobID %s)\n", bufA);
+
+                            hr = pReferencedMob->QueryInterface(IID_IAAFMasterMob, (void **) &pMasterMob);
+                            if(AAFRESULT_SUCCESS == hr)
+                            {
+//                                check(pMasterMob->GetTapeName (ref.sourceSlotID,
+//                                    bufW, sizeof(bufW)));
+                                pMasterMob->GetTapeName (ref.sourceSlotID, bufW, sizeof(bufW));
+//                                check(convert(bufA, sizeof(bufA), bufW));
+                                convert(bufA, sizeof(bufA), bufW);
+                                printf("            Derived from tape = '%s'\n", bufA);
+
+
+                                pMasterMob->Release();
+                                pMasterMob = NULL;
+                            }
+
+                            pReferencedMob->Release();
+                            pReferencedMob = NULL;
+
+                            pSourceClip->Release();
+                            pSourceClip = NULL;
+                        }
+                        hr = pComponent->QueryInterface(IID_IAAFFiller, (void **) &pFiller);
+                        if(AAFRESULT_SUCCESS == hr)
+                        {
+                            printf("        %d) A length %" AAFFMT64 "d filler\n", item, length);
+
+                            pFiller->Release();
+                            pFiller = NULL;
+                        }
+
+                        pComponent->Release();
+                        pComponent = NULL;
+                    }
+
+                    pCompIter->Release();
+                    pCompIter = NULL;
+
+                    pSequence->Release();
+                    pSequence = NULL;
+                }
+                else
+                {
+                    //printf("    Found unknown segment on slot\n");
+                }
+            }
+
+            pSegment->Release();
+            pSegment = NULL;
+
+            pSlot->Release();
+            pSlot = NULL;
+        }
+
+        pSlotIter->Release();
+        pSlotIter = NULL;
+
+
+        pMob->Release();
+        pMob = NULL;
     }
 
+    pCompMobIter->Release();
+    pCompMobIter = NULL;
+/// HERE
     printf("\n");
     printf("FileMobs\n"); 
 	while (AAFRESULT_SUCCESS == pFileMobIter->NextOne(&pFileMob))
